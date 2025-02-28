@@ -35,94 +35,42 @@ public class GameBoard extends JFrame {
         populateBoard();
     }
 
-    // Merge Sort to arrange pieces based on their positions on the chessboard
-    public void mergeSort(String[][] array, int left, int right) {
-        if (left < right) {
-            int mid = (left + right) / 2;
-            mergeSort(array, left, mid);  // Sort the left half
-            mergeSort(array, mid + 1, right); // Sort the right half
-            merge(array, left, mid, right);  // Merge the two halves
-        }
-    }
+    // Sort the piecesArray using Arrays.sort and place pieces accordingly
+    private void sortAndPopulateBoard() {
+        // Sort piecesArray based on the position (index 2) in ascending order
+        Arrays.sort(piecesArray, (piece1, piece2) -> Integer.compare(Integer.parseInt(piece1[2]), Integer.parseInt(piece2[2])));
 
-    // Merge method used by mergeSort
-    private void merge(String[][] array, int left, int mid, int right) {
-        int n1 = mid - left + 1;
-        int n2 = right - mid;
-        String[][] leftArray = new String[n1][3];
-        String[][] rightArray = new String[n2][3];
-
-        // Copy data to temporary arrays leftArray[] and rightArray[]
-        for (int i = 0; i < n1; i++) {
-            leftArray[i] = array[left + i];
-        }
-        for (int j = 0; j < n2; j++) {
-            rightArray[j] = array[mid + 1 + j];
-        }
-
-        // Merge the temporary arrays back into array[]
-        int i = 0, j = 0;
-        int k = left;
-        while (i < n1 && j < n2) {
-            if (Integer.parseInt(leftArray[i][2]) <= Integer.parseInt(rightArray[j][2])) {
-                array[k] = leftArray[i];
-                i++;
-            } else {
-                array[k] = rightArray[j];
-                j++;
-            }
-            k++;
-        }
-
-        // Copy the remaining elements of leftArray[], if any
-        while (i < n1) {
-            array[k] = leftArray[i];
-            i++;
-            k++;
-        }
-
-        // Copy the remaining elements of rightArray[], if any
-        while (j < n2) {
-            array[k] = rightArray[j];
-            j++;
-            k++;
-        }
-    }
-
-    // Populate the board with pieces after sorting
-    private void populateBoard() {
-        //mergeSort(piecesArray, 0, piecesArray.length - 1); // Sort pieces based on position
-
-        int pieceRow = 0; // Keeps track of the number of pieces
-        int squareName = 0; // All squares are numbered 1-64
+        // Populate the board with sorted pieces
+        int pieceIndex = 0; // Keeps track of the current piece
 
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
-                int boardPosition = Integer.parseInt(piecesArray[pieceRow][2]);
+                int boardPosition = row * SIZE + col;
 
-                // If the square number matches the piece position, place the piece
-                if (squareName == boardPosition) {
-                    String imagePath = piecesArray[pieceRow][0]; // Save the image path
-                    String pieceName = piecesArray[pieceRow][1]; // Save the piece name
+                // Check if the current square should have a piece
+                if (pieceIndex < piecesArray.length) {
+                    String[] piece = piecesArray[pieceIndex]; // Get the current piece
+                    int piecePosition = Integer.parseInt(piece[2]); // Position of the current piece
 
-                    ImageIcon icon = new ImageIcon(imagePath);
-                    Image scaledImage = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+                    // If the piece's position matches the current board square, place the piece
+                    if (piecePosition == boardPosition) {
+                        String imagePath = piece[0]; // Get the image path for the piece
+                        String pieceName = piece[1]; // Get the piece's name
 
-                    JLabel pieceLabel = new JLabel(new ImageIcon(scaledImage));
-                    JLabel textLabel = new JLabel(pieceName, SwingConstants.CENTER);
-                    textLabel.setForeground(Color.BLACK); // Make text black and centered at the bottom
+                        // Create the ImageIcon and scale the image
+                        ImageIcon icon = new ImageIcon(imagePath);
+                        Image scaledImage = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+                        JLabel pieceLabel = new JLabel(new ImageIcon(scaledImage));
 
-                    JPanel piecePanel = new JPanel(new BorderLayout());
-                    piecePanel.setOpaque(false); // Transparent background
-                    piecePanel.add(pieceLabel, BorderLayout.CENTER);
-                    piecePanel.add(textLabel, BorderLayout.SOUTH);
+                        // Add the image label to the board square
+                        squares[row][col].removeAll();  // Remove existing components from the square
+                        squares[row][col].add(pieceLabel);  // Add the new piece label
+                        squares[row][col].revalidate();  // Revalidate the layout
+                        squares[row][col].repaint();  // Refresh the square
 
-                    squares[row][col].setLayout(new BorderLayout());
-                    squares[row][col].add(piecePanel, BorderLayout.CENTER);
-
-                    pieceRow++; // Move to the next piece
+                        pieceIndex++;  // Move to the next piece in the sorted list
+                    }
                 }
-                squareName++; // Move to the next square
             }
         }
 
@@ -130,17 +78,22 @@ public class GameBoard extends JFrame {
         repaint(); // Refresh view
     }
 
+    // Populate the board with pieces after sorting
+    private void populateBoard() {
+        sortAndPopulateBoard();
+    }
+
     // Load chess pieces into the pieces array
     private void loadPieces() {
         // Initialize chess pieces with their names, colors, and positions
         piecesArray[0][0] = "rook_white.png"; piecesArray[0][1] = "White Rook"; piecesArray[0][2] = "0";
-        piecesArray[1][0] = "whiteknight.png"; piecesArray[1][1] = "White Knight"; piecesArray[1][2] = "1";
-        piecesArray[2][0] = "bishop_white.png"; piecesArray[2][1] = "White Bishop"; piecesArray[2][2] = "2";
-        piecesArray[3][0] = "queen_white.png"; piecesArray[3][1] = "White Queen"; piecesArray[3][2] = "3";
-        piecesArray[4][0] = "king_white.png"; piecesArray[4][1] = "White King"; piecesArray[4][2] = "4";
-        piecesArray[5][0] = "bishop_white.png"; piecesArray[5][1] = "White Pawn"; piecesArray[5][2] = "5";
+        piecesArray[1][0] = "bishop_white.png"; piecesArray[1][1] = "White Bishop"; piecesArray[1][2] = "2";
+        piecesArray[2][0] = "whiteknight.png"; piecesArray[2][1] = "White Knight"; piecesArray[2][2] = "1";
+        piecesArray[3][0] = "king_white.png"; piecesArray[3][1] = "White King"; piecesArray[3][2] = "4";
+        piecesArray[4][0] = "queen_white.png"; piecesArray[4][1] = "White Queen"; piecesArray[4][2] = "3";
+        piecesArray[5][0] = "rook_white.png"; piecesArray[5][1] = "White Pawn"; piecesArray[5][2] = "7";
         piecesArray[6][0] = "whiteknight.png"; piecesArray[6][1] = "White Pawn"; piecesArray[6][2] = "6";
-        piecesArray[7][0] = "rook_white.png"; piecesArray[7][1] = "White Pawn"; piecesArray[7][2] = "7";
+        piecesArray[7][0] = "bishop_white.png"; piecesArray[7][1] = "White Pawn"; piecesArray[7][2] = "5";
         piecesArray[8][0] = "pawn_white.png"; piecesArray[8][1] = "White Pawn"; piecesArray[8][2] = "8";
         piecesArray[9][0] = "pawn_white.png"; piecesArray[9][1] = "White Pawn"; piecesArray[9][2] = "9";
         piecesArray[10][0] = "pawn_white.png"; piecesArray[10][1] = "White Pawn"; piecesArray[10][2] = "10";
@@ -162,13 +115,9 @@ public class GameBoard extends JFrame {
         piecesArray[26][0] = "bishop_black.png"; piecesArray[26][1] = "Black Bishop"; piecesArray[26][2] = "58";
         piecesArray[27][0] = "queen_black.png"; piecesArray[27][1] = "Black Queen"; piecesArray[27][2] = "59";
         piecesArray[28][0] = "king_black.png"; piecesArray[28][1] = "Black King"; piecesArray[28][2] = "60";
-        piecesArray[29][0] = "bishop_black.png"; piecesArray[29][1] = "Black knight"; piecesArray[29][2] = "61";
-        piecesArray[30][0] = "knight_black.png"; piecesArray[30][1] = "Black knight"; piecesArray[30][2] = "62";
+        piecesArray[29][0] = "bishop_black.png"; piecesArray[29][1] = "Black Knight"; piecesArray[29][2] = "61";
+        piecesArray[30][0] = "knight_black.png"; piecesArray[30][1] = "Black Knight"; piecesArray[30][2] = "62";
         piecesArray[31][0] = " BlackRook.png"; piecesArray[31][1] = "Black Rook"; piecesArray[31][2] = "63";
-         
-
-
-         
     }
 
     public static void main(String[] args) {
@@ -179,5 +128,5 @@ public class GameBoard extends JFrame {
     }
 }
 
-    
+
 
